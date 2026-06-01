@@ -1,8 +1,9 @@
-# Точка входу FastAPI
 from fastapi import FastAPI
-
-app = FastAPI()
-
+ 
+app = FastAPI(title="Electronic Dean's Office")
+ 
+ 
 @app.get("/")
-def read_root():
-    return {"message": "Hello, World!"}
+def root():
+	return {"message": "Hello World"}
+
