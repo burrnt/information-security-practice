@@ -4,7 +4,7 @@ REST API на базі FastAPI + SQLite. Практична робота з ди
 "Безпека інформаційних систем".
 ## Запуск
 ```bash
-git clone <url-репозиторію>
+git clone https://github.com/burrnt/information-security-practice.git
 cd information-security-practice
 docker compose up --build
 ```
