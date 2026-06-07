@@ -12,7 +12,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 from app.database import Base
-from app import models  # важливо: щоб всі моделі підвантажились
+from app import models
 
 target_metadata = Base.metadata
 
