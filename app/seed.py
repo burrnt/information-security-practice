@@ -81,7 +81,7 @@ def seed():
             username="admin",
             email="admin@university.edu",
             full_name="Адміністратор Системи",
-            password_hash=hash_password("admin123"),
+            password_hash=hash_password("Admin123!@#"),
             is_active=True
         )
         admin_user.roles.append(admin)
@@ -90,7 +90,7 @@ def seed():
             username="petrov",
             email="petrov@university.edu",
             full_name="Петров Іван Сергійович",
-            password_hash=hash_password("teacher123")
+            password_hash=hash_password("Teacher123!")
         )
         teacher_user.roles.append(teacher)
 
@@ -98,7 +98,7 @@ def seed():
             username="ivanov",
             email="ivanov@university.edu",
             full_name="Іванов Олексій Петрович",
-            password_hash=hash_password("student123"),
+            password_hash=hash_password("Student123!"),
             group_id=group.id
         )
         student_user.roles.append(student)
