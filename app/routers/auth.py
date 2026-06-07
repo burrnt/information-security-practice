@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
+from starlette.requests import Request
+from app.middleware.rate_limiter import limiter
 from jose import JWTError
 
 from app.database import get_db
@@ -60,7 +62,8 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 @router.post("/login",
              response_model=TokenResponse,
              summary="Вхід користувача")
-def login(credentials: LoginRequest, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")  # Обмеження брутфорсу
+def login(request: Request, credentials: LoginRequest, db: Session = Depends(get_db)):
 
     # Пошук користувача з використанням жадібного завантаження (joinedload) для уникнення LazyLoadingError
     user = db.query(User).options(joinedload(User.roles)).filter(User.username == credentials.username).first()
