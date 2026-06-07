@@ -31,9 +31,8 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    email = Column(String(100), nullable=True) 
     
-    # Нові криптографічні поля для зберігання шифротексту Fernet
+    # Нові криптографічні поля для зберігання шифротексту Fernet у БД
     _encrypted_email = Column("encrypted_email", String, nullable=True)
     _encrypted_phone = Column("encrypted_phone", String, nullable=True)
   
@@ -48,25 +47,43 @@ class User(Base):
     def __repr__(self):
         return f"<User {self.username}>"
 
-    @property
-    def decrypted_email(self) -> str:
-        """Повертає розшифрований email, якщо він зашифрований, інакше відкритий текст."""
-        if self._encrypted_email:
-            return decrypt_field(self._encrypted_email)
-        return self.email
+    # =========================================================================
+    # ПОВНЕ ВИПРАВЛЕННЯ: Прозоре шифрування (Transparent Field Encryption)
+    # Тепер весь додаток використовує user.email та user.phone як звичайні рядки,
+    # але в БД вони автоматично потрапляють і зчитуються у зашифрованому вигляді!
+    # =========================================================================
 
     @property
-    def secure_email(self) -> str:
+    def email(self) -> str:
+        """Перехоплює читання поля email і прозоро розшифровує його."""
         if self._encrypted_email:
-            return decrypt_field(self._encrypted_email)
-        return self.email
+            try:
+                return decrypt_field(self._encrypted_email)
+            except Exception:
+                return "[ПОМИЛКА ДЕШИФРУВАННЯ]"
+        return ""
 
-    @secure_email.setter
-    def secure_email(self, value: str):
+    @email.setter
+    def email(self, value: str):
+        """Перехоплює запис у поле email і автоматично шифрує його перед збереженням."""
         if value:
             self._encrypted_email = encrypt_field(value)
-            self.email = value  # Для синхронізації та сумісності зі старими запитами
 
+    @property
+    def phone(self) -> str:
+        """Перехоплює читання поля phone і прозоро розшифровує його."""
+        if self._encrypted_phone:
+            try:
+                return decrypt_field(self._encrypted_phone)
+            except Exception:
+                return "[ПОМИЛКА ДЕШИФРУВАННЯ]"
+        return ""
+
+    @phone.setter
+    def phone(self, value: str):
+        """Перехоплює запис у поле phone і автоматично шифрує його перед збереженням."""
+        if value:
+            self._encrypted_phone = encrypt_field(value)
 
 class Role(Base):
     __tablename__ = "roles"
