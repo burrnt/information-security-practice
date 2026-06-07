@@ -9,3 +9,5 @@ venv/
 .idea/
 .vscode/
 .vs/
+data/backups/
+backups/*.enc
