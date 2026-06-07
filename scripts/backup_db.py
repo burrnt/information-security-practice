@@ -1,17 +1,20 @@
-import shutil
+import sys
 import os
+import shutil
 from datetime import datetime
 from cryptography.fernet import Fernet
+
+# Додаємо кореневу директорію проекту до шляхів пошуку модулів
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from app.crypto.key_manager import get_encryption_key
 
 def create_backup():
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    db_path = "data/dekanat.db"
-    backup_dir = "data/backups"
     
-    if not os.path.exists(db_path):
-        # Якщо відносний шлях інший у контейнері
-        db_path = "dekanat.db"
+    # Твій реальний перевірений шлях до БД в корені контейнера
+    db_path = "dekanat.db"
+    backup_dir = "backups"
         
     os.makedirs(backup_dir, exist_ok=True)
     backup_path = f"{backup_dir}/dekanat_backup_{timestamp}.db"
