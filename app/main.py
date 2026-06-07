@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from app.routers import auth
-from app.database import Base, engine
-from app import models
- 
+from app.database import engine, Base
+import app.models
+
+# Цей рядок автоматично створить .db файл та всі таблиці, якщо їх немає
+Base.metadata.create_all(bind=engine)
+
 app = FastAPI(
     title="Електронний деканат",
     description="API для управління академічними даними",
