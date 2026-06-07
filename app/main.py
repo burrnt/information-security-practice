@@ -1,5 +1,9 @@
+from app.audit.middleware import AuditMiddleware
+from app.audit.router import router as audit_router
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
 
@@ -17,8 +21,9 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="Електронний деканат",
     description="API для управління академічними даними",
-    version="0.6.0"
+    version="0.8.0"
 )
+app.add_middleware(AuditMiddleware)
 
 # Реєстрація обробника для гарної віддачі помилки 429 (Too Many Requests)
 app.state.limiter = limiter
@@ -40,6 +45,7 @@ app.include_router(auth.router)
 app.include_router(students.router)
 app.include_router(teachers.router)
 app.include_router(admin.router)
+app.include_router(audit_router, prefix="/api/v1/admin", tags=["audit"])
 
 @app.get("/")
 def root():
