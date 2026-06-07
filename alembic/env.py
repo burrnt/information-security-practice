@@ -1,16 +1,10 @@
-"""Alembic environment setup."""
-
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 import os
 import sys
 
-
-sys.path.insert(
-    0,
-    os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-)
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 config = context.config
 
@@ -18,14 +12,12 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 from app.database import Base
-from app import models
+from app import models  # важливо: щоб всі моделі підвантажились
 
 target_metadata = Base.metadata
 
 
-def run_migrations_offline() -> None:
-    """Run migrations in offline mode."""
-
+def run_migrations_offline():
     url = config.get_main_option("sqlalchemy.url")
 
     context.configure(
@@ -39,12 +31,8 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-def run_migrations_online() -> None:
-    """Run migrations in online mode."""
-
-    configuration = config.get_section(
-        config.config_ini_section
-    )
+def run_migrations_online():
+    configuration = config.get_section(config.config_ini_section)
 
     connectable = engine_from_config(
         configuration,
@@ -53,7 +41,6 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
