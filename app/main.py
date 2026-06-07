@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from app.routers import auth
 from app.database import engine, Base
+from app.seed import seed
 import app.models
 
 # Цей рядок автоматично створить .db файл та всі таблиці, якщо їх немає
@@ -27,3 +28,8 @@ def health_check():
     	"database": "SQLite",
     	"tables": len(Base.metadata.tables)
 	}
+
+@app.on_event("startup")
+def on_startup():
+    print("Запуск додатку: перевірка початкових даних...")
+    seed()
