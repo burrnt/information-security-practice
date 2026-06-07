@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import joinedload
 
 from app.database import get_db
 from app.models import User
@@ -56,9 +57,7 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 def login(credentials: LoginRequest, db: Session = Depends(get_db)):
     """Аутентифікація користувача за логіном та паролем."""
     # Пошук користувача
-    user = db.query(User).filter(
-        User.username == credentials.username
-    ).first()
+    user = db.query(User).options(joinedload(User.roles)).filter(User.username == request_data.username).first()
 
     # Захист від enumeration attack — однакове повідомлення про помилку
     if not user or not verify_password(
