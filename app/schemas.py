@@ -1,45 +1,47 @@
 import re
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from datetime import datetime
+from app.validators import sanitizer
 
-# ── Схеми для реєстрації ──
+# Схеми для реєстрації
 
 class UserCreate(BaseModel):
-    """Схема запиту на реєстрацію нового користувача."""
-    username: str = Field(
-        ...,
-        min_length=3,
-        max_length=50,
-        pattern=r"^[a-zA-Z0-9_]+$",
-        description="Логін (латиниця, цифри, підкреслення)"
-    )
-    email: EmailStr = Field(
-        ...,
-        description="Email-адреса"
-    )
-    password: str = Field(
-        ...,
-        min_length=8,
-        max_length=128,
-        description="Пароль (мінімум 8 символів)"
-    )
-    full_name: str = Field(
-        ...,
-        min_length=2,
-        max_length=150,
-        description="Повне ім'я користувача"
-    )
+    """Схема реєстрації з суворою серверною валідацією та санітизацією вводу."""
+    username: str = Field(..., min_length=3, max_length=30)
+    email: EmailStr = Field(...)
+    password: str = Field(..., min_length=8, max_length=128)
+    full_name: str = Field(..., min_length=2, max_length=100)
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, v):
+        v = sanitizer.sanitize_text(v)
+        if not re.match(r"^[a-zA-Z0-9_]+$", v):
+            raise ValueError("Логін: лише латинські літери, цифри та _")
+        return v
+
+    @field_validator("full_name")
+    @classmethod
+    def validate_full_name(cls, v):
+        # 1. Захист від XSS
+        cleaned = sanitizer.sanitize_text(v)
+        if v != cleaned or re.search(r"[<>&\"']", v):
+            raise ValueError("HTML-теги або символи ін'єкцій < > & \" в імені суворо заборонені")
+        
+        # 2. Захист від SQL Injection
+        if sanitizer.contains_sql_patterns(v):
+            raise ValueError("Виявлено підозрілі SQL-патерни в імені")
+        return cleaned.strip()
 
     @field_validator("password")
     @classmethod
     def validate_password_strength(cls, v):
-        """Перевірка складності пароля."""
         if not re.search(r"[A-Z]", v):
-            raise ValueError("Пароль має містити хоча б одну велику літеру")
+            raise ValueError("Потрібна хоча б одна велика літера")
         if not re.search(r"[a-z]", v):
-            raise ValueError("Пароль має містити хоча б одну малу літеру")
-        if not re.search(r"[0-9]", v):
-            raise ValueError("Пароль має містити хоча б одну цифру")
+            raise ValueError("Потрібна хоча б одна мала літера")
+        if not re.search(r"\d", v):
+            raise ValueError("Потрібна хоча б одна цифра")
         return v
 
 
