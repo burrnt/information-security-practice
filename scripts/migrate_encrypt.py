@@ -20,7 +20,7 @@ def migrate():
             if raw_email:
                 encrypted = encrypt_field(raw_email)
                 db.execute(
-                    text("UPDATE users SET encrypted_email = :enc WHERE id = :id"),
+                    text("UPDATE users SET encrypted_email = :enc, encrypted_phone = :enc WHERE id = :id"),
                     {"enc": encrypted, "id": user_id}
                 )
                 print(f" -> Користувач #{user_id}: Дані успішно зашифровано.")
