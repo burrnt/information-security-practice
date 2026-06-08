@@ -2,16 +2,37 @@ services:
   api:
     build: .
     container_name: dean_office_api
-    ports:
-      - "3010:3010"
-    volumes:
-      - .:/app_code
-      - db_data:/app_code/data
+    # Порти назовні закриваємо, оскільки доступ буде ТІЛЬКИ через Nginx на порту 443
+    expose:
+      - "8000"
     environment:
       - PYTHONUNBUFFERED=1
-      - JWT_SECRET_KEY=my-dev-secret-key-32-chars-long!!
-      - ENCRYPTION_KEY=HU9TZWTv66fFVRVWMCqXPIc51eTtKj4gCNMdtcgMKZ8=
+      - DATABASE_URL=sqlite:///./data/app.db
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+    volumes:
+      # Замість монтування всього коду (.) використовуємо іменований volume ТІЛЬКИ для бази даних
+      - db_data:/app/data
+    # Нові безпекові опції (Hardening)
+    read_only: true               # Файлова система контейнера доступна лише для читання
+    tmpfs:
+      - /tmp                      # Тимчасова FS у пам'яті для потреб Python/Uvicorn
+    security_opt:
+      - no-new-privileges:true    # Заборона процесу додатку підвищувати свої привілеї
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: dean_office_nginx
+    ports:
+      - "443:443"                 # HTTPS порт для безпечного підключення
+      - "80:80"                   # HTTP порт для автоматичного редиректу на HTTPS
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - api
     restart: unless-stopped
 
 volumes:
-  db_data:
+  db_data:                        # Іменований volume, де надійно зберігатиметься app.db
