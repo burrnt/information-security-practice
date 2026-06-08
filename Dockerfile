@@ -12,6 +12,6 @@ COPY . .
 # Створюємо директорію для бази даних
 RUN mkdir -p /app_code/data
 
-EXPOSE 3010
+EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "3010", "--reload"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
